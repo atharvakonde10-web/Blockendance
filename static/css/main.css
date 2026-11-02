@@ -1,5 +1,84 @@
+/* General page styling */
 body {
-    max-width: 500px;
-    margin: auto;
-    padding-top: 50px;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(to right, #eceff1, #fafafa);
+    min-height: 100vh;
+}
+
+/* Heading style */
+h3 {
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+.flow-text {
+    font-size: 1.3rem;
+    color: #607d8b;
+    margin-bottom: 30px;
+}
+
+/* Input field styling */
+.input-field input:focus + label {
+    color: #1565c0 !important;
+}
+
+.input-field input:focus {
+    border-bottom: 2px solid #1565c0 !important;
+    box-shadow: none !important;
+}
+
+/* Button styling */
+.btn {
+    border-radius: 30px;
+    padding: 0 25px;
+    text-transform: none;
+    font-weight: 500;
+    transition: all 0.3s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+/* Card styling */
+.card {
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+}
+
+/* Card title */
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #37474f;
+    margin-bottom: 15px;
+}
+
+/* Error message */
+.card-panel.red {
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+/* Other actions buttons */
+.card .btn {
+    width: 100%;
+    margin: 10px 0;
+}
+
+/* Mobile tweaks */
+@media (max-width: 600px) {
+    h3 {
+        font-size: 2rem;
+    }
+    .flow-text {
+        font-size: 1.1rem;
+    }
 }

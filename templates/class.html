@@ -56,8 +56,8 @@
 
                                 <div class="input-field col s12 m6">
                                     <i class="material-icons prefix">group</i>
-                                    <input type="number" id="number" name="number" value="30" min="1" max="100" required>
-                                    <label for="number">Total Number of Students</label>
+                                    <input type="number" id="number" name="number" value="{% if not view_mode %}30{% endif %}" placeholder="{% if view_mode %}Optional — e.g. 18{% endif %}" min="1" max="100" {% if not view_mode %}required{% endif %}>
+                                    <label class="active" for="number">{% if view_mode %}Total Students <small style="font-size:11px;">(optional filter)</small>{% else %}Total Number of Students{% endif %}</label>
                                 </div>
 
                                 <div class="input-field col s12 m6">
@@ -73,20 +73,27 @@
                                     <label for="course">Course</label>
                                 </div>
 
-                                <div class="input-field col s12 m6">
+                                <div class="input-field col s12 m4">
                                     <i class="material-icons prefix">school</i>
                                     <select id="year" name="year" required>
-                                        <option value="" disabled selected>Choose Year</option>
-                                        <option value="2024">2024</option>
-                                        <option value="2023">2023</option>
-                                        <option value="2022">2022</option>
-                                        <option value="2021">2021</option>
-                                        <option value="2020">2020</option>
+                                        <option value="2026" selected>2026</option>
                                     </select>
                                     <label for="year">Enrollment Year</label>
                                 </div>
 
-                                <div class="input-field col s12 m6">
+                                <div class="input-field col s12 m4">
+                                    <i class="material-icons prefix">account_balance</i>
+                                    <select id="engg_year" name="engg_year" required>
+                                        <option value="" disabled {% if not engg_year %}selected{% endif %}>Choose Year in Engg</option>
+                                        <option value="FE" {% if engg_year == 'FE' %}selected{% endif %}>FE (First Year)</option>
+                                        <option value="SE" {% if engg_year == 'SE' %}selected{% endif %}>SE (Second Year)</option>
+                                        <option value="TE" {% if engg_year == 'TE' %}selected{% endif %}>TE (Third Year)</option>
+                                        <option value="BE" {% if engg_year == 'BE' %}selected{% endif %}>BE (Final Year)</option>
+                                    </select>
+                                    <label for="engg_year">Engineering Year</label>
+                                </div>
+
+                                <div class="input-field col s12 m4">
                                     <i class="material-icons prefix">date_range</i>
                                     <input class="datepicker" type="text" id="date" name="date" value="{{ date or '' }}" required>
                                     <label for="date">Date</label>

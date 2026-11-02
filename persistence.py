@@ -67,18 +67,15 @@ def load_blockchain(filename=None):
             # Convert timestamp string back to datetime
             timestamp = dt.datetime.fromisoformat(block_data["timestamp"].replace('Z', '+00:00'))
             
-            # Create block object
+            # Create block object preserving the stored hash from file
+            stored_hash = block_data.get("hash")
             block = Block(
                 index=block_data["index"],
                 timestamp=timestamp,
                 data=block_data["data"],
-                prev_hash=block_data["prev_hash"]
+                prev_hash=block_data["prev_hash"],
+                hash=stored_hash
             )
-            
-            # Verify the hash matches
-            if block.hash != block_data["hash"]:
-                return None, f"Hash mismatch in block {block_data['index']}"
-            
             blockchain.append(block)
         
         metadata = blockchain_data.get("metadata", {})
@@ -96,7 +93,7 @@ def export_blockchain_csv(blockchain, filename="blockchain_export.csv"):
         
         with open(filename, 'w', newline='') as csvfile:
             fieldnames = ['block_index', 'timestamp', 'type', 'teacher_name', 'course', 
-                         'year', 'date', 'students_present', 'prev_hash', 'hash']
+                         'engg_year', 'year', 'date', 'students_present', 'prev_hash', 'hash']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             
             writer.writeheader()
@@ -108,6 +105,7 @@ def export_blockchain_csv(blockchain, filename="blockchain_export.csv"):
                         'type': 'genesis',
                         'teacher_name': '',
                         'course': '',
+                        'engg_year': '',
                         'year': '',
                         'date': '',
                         'students_present': '',
@@ -121,6 +119,7 @@ def export_blockchain_csv(blockchain, filename="blockchain_export.csv"):
                         'type': 'attendance',
                         'teacher_name': block.data.get('teacher_name', ''),
                         'course': block.data.get('course', ''),
+                        'engg_year': block.data.get('engg_year', ''),
                         'year': block.data.get('year', ''),
                         'date': block.data.get('date', ''),
                         'students_present': ';'.join(block.data.get('present_students', [])),

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Explorer - Blockendance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/materialize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 20px 10px;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header-section h1 {
+            color: #1a365d;
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .block-card {
+            background: #ffffff;
+            padding: 22px;
+            margin: 20px auto;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            max-width: 850px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .block-card:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        /* VALID BLOCK THEME */
+        .block-card.valid-theme {
+            border-left: 7px solid #2e7d32;
+            border-top: 1px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        /* TAMPERED / INVALID BLOCK THEME (DIFFERENT THEME FOR EASY RECOGNITION) */
+        .block-card.tampered-theme {
+            border: 3px solid #d32f2f !important;
+            background: linear-gradient(180deg, #fffafa 0%, #ffebee 100%) !important;
+            box-shadow: 0 6px 20px rgba(211, 47, 47, 0.28) !important;
+            position: relative;
+        }
+
+        .tamper-banner {
+            background: #c62828;
+            color: #ffffff;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(198, 40, 40, 0.3);
+        }
+
+        .block-card h2 {
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .valid-theme h2 {
+            color: #1565c0;
+        }
+
+        .tampered-theme h2 {
+            color: #b71c1c;
+        }
+
+        .badge-status {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .badge-valid {
+            background-color: #2e7d32;
+            color: #ffffff;
+        }
+
+        .badge-tampered {
+            background-color: #d32f2f;
+            color: #ffffff;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .hash-code {
+            display: inline-block;
+            word-break: break-all;
+            background: #f4f6f8;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+        }
+
+        .tampered-theme .hash-code.current-hash {
+            background: #ffcdd2;
+            color: #b71c1c;
+            border: 1px dashed #d32f2f;
+            font-weight: bold;
+        }
+
+        .student-roll-chip {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #1b5e20;
+            font-weight: 600;
+            font-size: 12px;
+            padding: 3px 8px;
+            margin: 2px 3px;
+            border-radius: 12px;
+            border: 1px solid #c8e6c9;
+        }
+
+        .student-roll-container {
+            margin-top: 8px;
+            max-height: 120px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .block-actions {
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .bottom-nav {
+            max-width: 850px;
+            margin: 30px auto;
+            text-align: center;
+        }
+
+        .bottom-nav .btn {
+            margin: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header-section">
+        <h1><i class="material-icons" style="font-size: 2rem; vertical-align: middle;">link</i> Blockchain Ledger</h1>
+        <p class="grey-text text-darken-1" style="margin: 0;">Complete chain of recorded blocks and cryptographic hash states</p>
+    </div>
+
+    {% if error %}
+    <div style="max-width: 850px; margin: 0 auto 15px;">
+        <div class="card-panel red lighten-4 red-text text-darken-2">
+            <i class="material-icons left">error</i>Error: {{ error }}
+        </div>
+    </div>
+    {% endif %}
+
+    {% for block in chain %}
+    <div class="block-card {% if block.is_tampered %}tampered-theme{% else %}valid-theme{% endif %}">
+        {% if block.is_tampered %}
+        <div class="tamper-banner">
+            <i class="material-icons left">warning</i>
+            <span><strong>Tamper Detected!</strong> This block's stored SHA-256 hash does not match its current data contents. Integrity check failed!</span>
+        </div>
+        {% endif %}
+
+        <h2>
+            <span>
+                <i class="material-icons left" style="vertical-align: middle;">{% if block.is_tampered %}error{% else %}check_circle{% endif %}</i>
+                Block #{{ block.index }}
+            </span>
+            {% if block.is_tampered %}
+                <span class="badge-status badge-tampered">⚠️ Tampered / Invalid Hash</span>
+            {% else %}
+                <span class="badge-status badge-valid">✔ Valid Block</span>
+            {% endif %}
+        </h2>
+
+        <p style="margin: 4px 0;"><strong>Timestamp:</strong> {{ block.timestamp }}</p>
+        <p style="margin: 4px 0;">
+            <strong>Stored Hash:</strong> 
+            <span class="hash-code {% if block.is_tampered %}current-hash{% endif %}">{{ block.hash }}</span>
+            {% if block.is_tampered %}
+                <span class="red-text" style="font-size: 12px; font-weight: bold; margin-left: 6px;">(Mismatch!)</span>
+            {% endif %}
+        </p>
+        <p style="margin: 4px 0;"><strong>Previous Hash:</strong> <span class="hash-code">{{ block.prev_hash }}</span></p>
+
+        {% if block.data %}
+        <div style="margin-top: 10px;">
+            <strong>Block Data:</strong>
+            {% if block.data.type == 'attendance' %}
+                <span class="badge blue white-text" style="float:none; border-radius: 4px; padding: 2px 6px;">Attendance</span><br>
+                <div style="margin-top: 6px;">
+                    <strong>Teacher:</strong> {{ block.data.teacher_name }} &bull;
+                    <strong>Course:</strong> {{ block.data.course }} &bull;
+                    {% if block.data.engg_year %}
+                    <strong>Class:</strong> <span class="badge blue white-text" style="float:none; border-radius: 4px; padding: 2px 6px;">{{ block.data.engg_year }}</span> &bull;
+                    {% endif %}
+                    <strong>Year:</strong> {{ block.data.year }} &bull;
+                    <strong>Date:</strong> {{ block.data.date }}
+                </div>
+
+                <div style="margin-top: 8px;">
+                    <strong>Present Roll Numbers ({{ block.data.present_students|length }} students):</strong>
+                    <div class="student-roll-container">
+                        {% for r in block.data.present_students %}
+                            {# Display short roll number instead of repeating Course-Year #}
+                            {% set parts = r.split('-') %}
+                            {% set short_roll = parts[-1] if parts|length > 1 else r %}
+                            <span class="student-roll-chip">Roll {{ short_roll }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="block-actions">
+                    <a href="/view/{{ block.index }}" class="btn-small waves-effect waves-light blue">
+                        <i class="material-icons left tiny">visibility</i>View Record
+                    </a>
+                    <a href="/edit/{{ block.index }}" class="btn-small waves-effect waves-light orange darken-2">
+                        <i class="material-icons left tiny">edit</i>Modify (Demonstrate Tamper)
+                    </a>
+                </div>
+            {% else %}
+                <div style="margin-top: 6px;">
+                    <span class="badge grey white-text" style="float:none; border-radius: 4px; padding: 2px 6px;">Genesis Block</span>
+                    <pre style="margin: 6px 0; background: #f5f5f5; padding: 6px 10px; border-radius: 4px; font-size: 13px;">{{ block.data }}</pre>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <div class="bottom-nav">
+        <form method="post" action="/reset" style="display: inline-block; margin-bottom: 15px;"
+            onsubmit="return confirm('Are you sure you want to reset the blockchain? This will keep only the genesis block.');">
+            <button type="submit" class="btn waves-effect waves-light red darken-2">
+                <i class="material-icons left">delete_sweep</i>Reset Blockchain
+            </button>
+        </form>
+
+        <div>
+            <a href="/" class="btn waves-effect waves-light blue">
+                <i class="material-icons left">home</i>Home
+            </a>
+            <a href="/view.html" class="btn waves-effect waves-light green">
+                <i class="material-icons left">search</i>View / Search Records
+            </a>
+            <a href="/result.html" class="btn waves-effect waves-light orange darken-1">
+                <i class="material-icons left">security</i>Check Integrity
+            </a>
+        </div>
+    </div>
+</body>
+</html>

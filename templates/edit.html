@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modify Attendance - Blockendance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/materialize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f4f8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+            max-height: 380px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .student-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .student-item.present {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            border: 1px solid #81c784;
+        }
+
+        .student-item.absent {
+            background-color: #ffebee;
+            color: #b71c1c;
+            border: 1px solid #e57373;
+        }
+
+        .student-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .student-item .status-icon {
+            font-size: 16px;
+        }
+
+        .roster-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .counter-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body class="blue-grey lighten-4">
+    <div class="container" style="max-width: 900px; margin-top: 20px;">
+        <!-- HEADER -->
+        <div class="row">
+            <div class="col s12 center-align">
+                <h4 class="blue-grey-text text-darken-2" style="font-weight: 700;">
+                    <i class="material-icons" style="vertical-align: middle;">edit</i> Modify Attendance Record
+                </h4>
+                <p class="flow-text" style="font-size: 1.1rem; margin-top: 0;">
+                    Block #{{ block_index }} &bull; Tamper Detection Demonstration
+                </p>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="row">
+            <div class="col s12">
+                <div class="card-panel red lighten-4 red-text text-darken-2">
+                    <i class="material-icons left">error</i>{{ error }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TAMPER NOTICE -->
+        <div class="row">
+            <div class="col s12">
+                <div class="card-panel amber lighten-4 brown-text text-darken-3" style="border-left: 5px solid #ff9800;">
+                    <i class="material-icons left">warning</i>
+                    <strong>Blockchain Tamper Demonstration:</strong>
+                    Modifying attendance values below will save new data to this block 
+                    <strong>while preserving its original stored SHA-256 hash</strong>.
+                    This immediately triggers a hash mismatch in the blockchain integrity verification!
+                </div>
+            </div>
+        </div>
+
+        <!-- EDIT FORM -->
+        <div class="row">
+            <div class="col s12">
+                <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">
+                            <i class="material-icons left">assignment</i>
+                            Edit Block #{{ block_index }} Information
+                        </span>
+
+                        <form action="/edit/{{ block_index }}" method="POST" id="editForm">
+                            <div class="row">
+                                <div class="input-field col s12 m6">
+                                    <i class="material-icons prefix">account_circle</i>
+                                    <input type="text" id="teacher_name" name="teacher_name" value="{{ data.teacher_name }}" required>
+                                    <label class="active" for="teacher_name">Teacher Name</label>
+                                </div>
+
+                                <div class="input-field col s12 m6">
+                                    <i class="material-icons prefix">date_range</i>
+                                    <input type="text" class="datepicker" id="date" name="date" value="{{ data.date }}" required>
+                                    <label class="active" for="date">Date</label>
+                                </div>
+
+                                <div class="input-field col s12 m4">
+                                    <i class="material-icons prefix">book</i>
+                                    <input type="text" id="course" name="course" value="{{ data.course }}" required>
+                                    <label class="active" for="course">Course</label>
+                                </div>
+
+                                <div class="input-field col s12 m4">
+                                    <i class="material-icons prefix">school</i>
+                                    <input type="text" id="year" name="year" value="{{ data.year or '2026' }}" required>
+                                    <label class="active" for="year">Enrollment Year</label>
+                                </div>
+
+                                <div class="input-field col s12 m4">
+                                    <i class="material-icons prefix">account_balance</i>
+                                    <input type="text" id="engg_year" name="engg_year" value="{{ data.engg_year or '' }}" placeholder="FE, SE, TE, or BE">
+                                    <label class="active" for="engg_year">Engineering Year</label>
+                                </div>
+                            </div>
+
+                            <!-- ATTENDANCE ROSTER: SIMPLE ROLL NUMBERS WITH PRESENT / ABSENT TOGGLE -->
+                            <div class="row">
+                                <div class="col s12">
+                                    <div style="margin-top: 10px; margin-bottom: 5px;">
+                                        <strong style="font-size: 1.1rem;">
+                                            <i class="material-icons tiny left" style="vertical-align: middle;">group</i>
+                                            Student Attendance Roster
+                                        </strong>
+                                        <p class="grey-text" style="margin: 3px 0 10px 0; font-size: 13px;">
+                                            Click any student to toggle between <strong>Present (Green)</strong> and <strong>Absent (Red)</strong>.
+                                        </p>
+                                    </div>
+
+                                    <div class="roster-toolbar">
+                                        <div>
+                                            <button type="button" class="btn-small waves-effect waves-light green darken-1" onclick="markAllRoster(true)">
+                                                <i class="material-icons left tiny">done_all</i>All Present
+                                            </button>
+                                            <button type="button" class="btn-small waves-effect waves-light red darken-1" onclick="markAllRoster(false)">
+                                                <i class="material-icons left tiny">clear_all</i>All Absent
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <span class="counter-pill green lighten-4 green-text text-darken-3" id="presentCount">0 Present</span>
+                                            <span class="counter-pill red lighten-4 red-text text-darken-3" id="absentCount">0 Absent</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Interactive student grid -->
+                                    <div class="student-grid" id="studentGrid">
+                                        <!-- Generated dynamically by script below -->
+                                    </div>
+
+                                    <!-- Hidden field containing the serialized present students list -->
+                                    <input type="hidden" id="present_students" name="present_students" value="{{ present_students_text }}">
+                                </div>
+                            </div>
+
+                            <!-- BLOCKCHAIN CRYPTOGRAPHIC METADATA -->
+                            <div class="row">
+                                <div class="col s12">
+                                    <div class="card-panel grey lighten-4" style="border-radius: 6px;">
+                                        <h6 style="font-weight: 600;"><i class="material-icons left tiny">lock</i>Cryptographic Block Details (Read-only)</h6>
+                                        <p style="margin: 5px 0;"><strong>Stored Hash:</strong> <code style="word-break: break-all; background: #e0e0e0; padding: 2px 6px; border-radius: 3px;">{{ block_hash }}</code> <span class="badge orange white-text" style="float:none; border-radius: 3px;">Will be preserved</span></p>
+                                        <p style="margin: 5px 0;"><strong>Previous Hash:</strong> <code style="word-break: break-all; background: #e0e0e0; padding: 2px 6px; border-radius: 3px;">{{ prev_hash }}</code></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col s12 center-align">
+                                    <button class="btn waves-effect waves-light orange darken-2 large" type="submit">
+                                        <i class="material-icons left">save</i>Save Changes (Tamper)
+                                    </button>
+                                    <a href="/transactions" class="btn waves-effect waves-light grey large">
+                                        <i class="material-icons left">arrow_back</i>Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='js/materialize.js') }}"></script>
+    <script type="text/javascript">
+        // Initial list of present student strings from backend
+        const initialPresent = {{ (data.present_students or []) | tojson }};
+        const course = {{ (data.course or "Computer Science") | tojson }};
+        const year = {{ (data.year or "2026") | tojson }};
+
+        // Determine total students count: use total_students passed from backend
+        let maxRoll = {{ total_students or (data.total_students or 0) }};
+        if (!maxRoll || maxRoll <= 0) {
+            maxRoll = 0;
+            initialPresent.forEach(item => {
+                const parts = item.split('-');
+                const num = parseInt(parts[parts.length - 1], 10);
+                if (!isNaN(num) && num > maxRoll) {
+                    maxRoll = num;
+                }
+            });
+            if (maxRoll === 0) maxRoll = 30;
+        }
+
+        // Track attendance state for roll numbers 1..maxRoll
+        const rosterState = {};
+        for (let i = 1; i <= maxRoll; i++) {
+            const rollStr = String(i).padStart(2, '0');
+            const fullRoll = `${course}-${year}-${rollStr}`;
+            // Present if either full string or short roll is in list
+            const isPresent = initialPresent.includes(fullRoll) || 
+                              initialPresent.includes(rollStr) || 
+                              initialPresent.includes(String(i));
+            rosterState[i] = isPresent;
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('studentGrid');
+            grid.innerHTML = '';
+            let presentCount = 0;
+            let absentCount = 0;
+
+            for (let i = 1; i <= maxRoll; i++) {
+                const rollStr = String(i).padStart(2, '0');
+                const isPresent = rosterState[i];
+                if (isPresent) presentCount++; else absentCount++;
+
+                const div = document.createElement('div');
+                div.className = `student-item ${isPresent ? 'present' : 'absent'}`;
+                div.onclick = () => toggleStudent(i);
+
+                div.innerHTML = `
+                    <span>Roll ${rollStr}</span>
+                    <span class="status-icon">${isPresent ? '✔' : '✖'}</span>
+                `;
+                grid.appendChild(div);
+            }
+
+            document.getElementById('presentCount').innerText = `${presentCount} Present`;
+            document.getElementById('absentCount').innerText = `${absentCount} Absent`;
+
+            // Sync hidden form input with list of full roll numbers
+            const presentList = [];
+            for (let i = 1; i <= maxRoll; i++) {
+                if (rosterState[i]) {
+                    const rollStr = String(i).padStart(2, '0');
+                    presentList.push(`${course}-${year}-${rollStr}`);
+                }
+            }
+            document.getElementById('present_students').value = presentList.join(', ');
+        }
+
+        function toggleStudent(roll) {
+            rosterState[roll] = !rosterState[roll];
+            renderGrid();
+        }
+
+        function markAllRoster(makePresent) {
+            for (let i = 1; i <= maxRoll; i++) {
+                rosterState[i] = makePresent;
+            }
+            renderGrid();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            M.AutoInit();
+            renderGrid();
+
+            var dpelem = document.querySelector('.datepicker');
+            if (dpelem) {
+                M.Datepicker.init(dpelem, {
+                    format: 'yyyy-mm-dd',
+                    setDefaultDate: false
+                });
+            }
+        });
+    </script>
+</body>
+</html>

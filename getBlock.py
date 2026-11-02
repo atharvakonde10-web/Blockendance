@@ -57,6 +57,7 @@ def get_all_attendance_records(blockchain):
                 "date": block.data.get("date", ""),
                 "course": block.data.get("course", ""),
                 "year": block.data.get("year", ""),
+                "engg_year": block.data.get("engg_year", ""),
                 "present_students": block.data.get("present_students", []),
                 "student_count": len(block.data.get("present_students", []))
             })
@@ -77,6 +78,20 @@ def search_by_student(blockchain, roll_no):
                     "date": block.data.get("date", ""),
                     "course": block.data.get("course", ""),
                     "year": block.data.get("year", ""),
+                    "engg_year": block.data.get("engg_year", ""),
                     "teacher_name": block.data.get("teacher_name", "")
                 })
     return student_records
+
+def get_block_by_index(blockchain, index):
+    """
+    Get a specific block by its index
+    """
+    try:
+        idx = int(index)
+        for block in blockchain:
+            if block.index == idx:
+                return block
+        return None
+    except (ValueError, TypeError):
+        return None

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,35 +26,35 @@
                     <div class="card-content">
                         <span class="card-title">
                             {% if "Error" in result %}
-                                <i class="material-icons red-text">error</i> Error
+                            <i class="material-icons red-text">error</i> Error
                             {% elif "verified" in result %}
-                                <i class="material-icons green-text">verified</i> Blockchain Status
+                            <i class="material-icons green-text">verified</i> Blockchain Status
                             {% else %}
-                                <i class="material-icons blue-text">info</i> Result
+                            <i class="material-icons blue-text">info</i> Result
                             {% endif %}
                         </span>
 
                         <div class="result-content">
                             {% if "Error" in result %}
-                                <div class="card-panel red lighten-4 red-text text-darken-2">
-                                    <i class="material-icons left">error</i>
-                                    {{ result }}
-                                </div>
+                            <div class="card-panel red lighten-4 red-text text-darken-2">
+                                <i class="material-icons left">error</i>
+                                {{ result }}
+                            </div>
                             {% elif "verified" in result %}
-                                <div class="card-panel green lighten-4 green-text text-darken-2">
-                                    <i class="material-icons left">check_circle</i>
-                                    {{ result }}
-                                </div>
+                            <div class="card-panel green lighten-4 green-text text-darken-2">
+                                <i class="material-icons left">check_circle</i>
+                                {{ result }}
+                            </div>
                             {% elif "added" in result %}
-                                <div class="card-panel blue lighten-4 blue-text text-darken-2">
-                                    <i class="material-icons left">add_circle</i>
-                                    {{ result }}
-                                </div>
+                            <div class="card-panel blue lighten-4 blue-text text-darken-2">
+                                <i class="material-icons left">add_circle</i>
+                                {{ result }}
+                            </div>
                             {% else %}
-                                <div class="card-panel grey lighten-4 grey-text text-darken-2">
-                                    <i class="material-icons left">info</i>
-                                    {{ result }}
-                                </div>
+                            <div class="card-panel grey lighten-4 grey-text text-darken-2">
+                                <i class="material-icons left">info</i>
+                                {{ result }}
+                            </div>
                             {% endif %}
                         </div>
 
@@ -83,12 +84,13 @@
                                     <p><strong>Hash:</strong> <code>{{ stats.latest_block.hash[:20] }}...</code></p>
                                     <p><strong>Timestamp:</strong> {{ stats.latest_block.timestamp }}</p>
                                     {% if stats.latest_block.data.type == 'attendance' %}
-                                        <p><strong>Type:</strong> Attendance Record</p>
-                                        <p><strong>Teacher:</strong> {{ stats.latest_block.data.teacher_name }}</p>
-                                        <p><strong>Course:</strong> {{ stats.latest_block.data.course }}</p>
-                                        <p><strong>Students Present:</strong> {{ stats.latest_block.data.present_students|length }}</p>
+                                    <p><strong>Type:</strong> Attendance Record</p>
+                                    <p><strong>Teacher:</strong> {{ stats.latest_block.data.teacher_name }}</p>
+                                    <p><strong>Course:</strong> {{ stats.latest_block.data.course }}</p>
+                                    <p><strong>Students Present:</strong> {{
+                                        stats.latest_block.data.present_students|length }}</p>
                                     {% else %}
-                                        <p><strong>Type:</strong> {{ stats.latest_block.data.type|title }}</p>
+                                    <p><strong>Type:</strong> {{ stats.latest_block.data.type|title }}</p>
                                     {% endif %}
                                 </div>
                             </div>
@@ -109,6 +111,9 @@
                             <i class="material-icons left">refresh</i>Check Again
                         </a>
                         {% endif %}
+                        <a href="/transactions" class="btn waves-effect waves-light red">
+                            View Blockchain
+                        </a>
                     </div>
                 </div>
             </div>
@@ -117,16 +122,16 @@
 
     <script type="text/javascript" src="{{ url_for('static', filename='js/materialize.js') }}"></script>
     <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             M.AutoInit();
 
             // Show success toast if block was added
             {% if "added" in result %}
-                M.toast({html: 'Attendance successfully recorded in blockchain!', classes: 'green'});
+            M.toast({ html: 'Attendance successfully recorded in blockchain!', classes: 'green' });
             {% elif "verified" in result %}
-                M.toast({html: 'Blockchain integrity verified!', classes: 'green'});
+            M.toast({ html: 'Blockchain integrity verified!', classes: 'green' });
             {% elif "Error" in result %}
-                M.toast({html: 'An error occurred. Please try again.', classes: 'red'});
+            M.toast({ html: 'An error occurred. Please try again.', classes: 'red' });
             {% endif %}
         });
     </script>
@@ -135,12 +140,15 @@
         .result-content {
             margin: 20px 0;
         }
+
         .blockchain-stats {
             margin-top: 30px;
         }
+
         .latest-block {
             margin-top: 20px;
         }
+
         code {
             background-color: #f5f5f5;
             padding: 2px 4px;
@@ -149,4 +157,5 @@
         }
     </style>
 </body>
+
 </html>

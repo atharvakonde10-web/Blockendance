@@ -21,6 +21,13 @@ def add_block(form, data, blockchain):
     Add a new attendance block to the blockchain
     """
     try:
+        # Get total students count if provided
+        total_students = 0
+        try:
+            total_students = int(form.get("number", 0))
+        except (ValueError, TypeError):
+            total_students = 0
+
         # Create attendance data structure
         attendance_data = {
             "type": "attendance",
@@ -28,16 +35,25 @@ def add_block(form, data, blockchain):
             "date": data[1] if len(data) > 1 else "",
             "course": data[2] if len(data) > 2 else "",
             "year": data[3] if len(data) > 3 else "",
+            "engg_year": data[4] if len(data) > 4 else form.get("engg_year", "").strip(),
+            "total_students": total_students,
             "present_students": []
         }
 
-        # Collect present students from form
+        # Collect present students from form (do NOT break on absent students!)
         i = 1
-        while form.get("roll_no{}".format(i)):
-            roll_no = form.get("roll_no{}".format(i))
+        limit = total_students if total_students > 0 else 100
+        while i <= limit:
+            key = f"roll_no{i}"
+            if key not in form and total_students == 0:
+                break
+            roll_no = form.get(key, "").strip()
             if roll_no:  # Only add non-empty roll numbers
                 attendance_data["present_students"].append(roll_no)
             i += 1
+
+        if attendance_data["total_students"] <= 0:
+            attendance_data["total_students"] = i - 1
 
         # Validate that we have some data
         if not attendance_data["present_students"]:

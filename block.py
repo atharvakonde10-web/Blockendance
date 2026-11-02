@@ -2,12 +2,12 @@ import hashlib
 import json
 
 class Block:
-    def __init__(self, index, timestamp, data, prev_hash):
+    def __init__(self, index, timestamp, data, prev_hash, hash=None):
         self.index = index
         self.timestamp = timestamp
         self.data = data
         self.prev_hash = prev_hash
-        self.hash = self.hash_block()
+        self.hash = hash if hash is not None else self.hash_block()
 
     def hash_block(self):
         """

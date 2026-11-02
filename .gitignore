@@ -83,7 +83,9 @@ celerybeat-schedule
 
 # Environments
 .env
+.env.*
 .venv
+.venv/
 env/
 venv/
 ENV/
@@ -102,3 +104,21 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.suo
+*.user
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Runtime blockchain data (local only, not for version control)
+blockchain_data.json
+blockchain_backups/

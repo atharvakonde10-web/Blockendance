@@ -46,10 +46,17 @@
             <div class="col s12">
                 <div class="card">
                     <div class="card-content">
-                        <span class="card-title">
-                            <i class="material-icons left">class</i>
-                            Class Information
-                        </span>
+                        <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                            <span>
+                                <i class="material-icons left">class</i>
+                                Class Information {% if block_index %}<span class="badge blue white-text" style="float:none;">Block #{{ block_index }}</span>{% endif %}
+                            </span>
+                            {% if block_index %}
+                            <a href="/edit/{{ block_index }}" class="btn waves-effect waves-light orange darken-2">
+                                <i class="material-icons left">edit</i>Modify
+                            </a>
+                            {% endif %}
+                        </div>
 
                         <div class="row">
                             <div class="col s12 m6">
@@ -62,14 +69,24 @@
                                     <strong>Date:</strong> {{ date }}
                                 </div>
                             </div>
-                            <div class="col s12 m6">
+                            <div class="col s12 m4">
                                 <div class="info-item">
                                     <strong>Course:</strong> {{ course }}
                                 </div>
                             </div>
-                            <div class="col s12 m6">
+                            <div class="col s12 m4">
                                 <div class="info-item">
-                                    <strong>Year:</strong> {{ year }}
+                                    <strong>Engineering Year:</strong>
+                                    {% if engg_year %}
+                                        <span class="chip blue white-text" style="height:26px; line-height:26px; margin:0 0 0 5px; font-weight:600;">{{ engg_year }}</span>
+                                    {% else %}
+                                        <span class="grey-text">N/A</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col s12 m4">
+                                <div class="info-item">
+                                    <strong>Enrollment Year:</strong> {{ year }}
                                 </div>
                             </div>
                         </div>
@@ -111,25 +128,43 @@
                             </div>
                         </div>
 
+                        {% if status %}
+                        <div style="margin: 15px 0;">
+                            <strong>Present Students ({{ status|length }}):</strong>
+                            <div style="margin-top: 8px;">
+                                {% for r_num in status %}
+                                {% set short_r = r_num.split('-')[-1] if '-' in r_num else r_num %}
+                                <div class="chip green lighten-4 green-text text-darken-3" style="font-weight: 600;">
+                                    Roll {{ short_r }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
                         <table class="striped responsive-table">
                             <thead>
                                 <tr>
-                                    <th><i class="material-icons left">person</i>Roll Number</th>
-                                    <th><i class="material-icons left">assignment_turned_in</i>Status</th>
+                                    <th><i class="material-icons left">person</i>Student Roll Number</th>
+                                    <th><i class="material-icons left">assignment_turned_in</i>Attendance Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for i in range(1, number + 1) %}
-                                {% set roll_number = course + "-" + year + "-" + "%02d"|format(i) %}
+                                {% set roll_str = "%02d"|format(i) %}
+                                {% set roll_full = course + "-" + year + "-" + roll_str %}
+                                {% set is_present = (present_roll_indices and (roll_str in present_roll_indices or i|string in present_roll_indices)) or (roll_full in status) or (roll_str in status) or (i|string in status) %}
                                 <tr>
-                                    <td>{{ roll_number }}</td>
                                     <td>
-                                        {% if roll_number in status %}
-                                            <span class="green-text">
+                                        <span style="font-size: 1.05rem; font-weight: 600;">Roll {{ roll_str }}</span>
+                                    </td>
+                                    <td>
+                                        {% if is_present %}
+                                            <span class="green-text" style="font-weight: 600;">
                                                 <i class="material-icons tiny">check_circle</i> Present
                                             </span>
                                         {% else %}
-                                            <span class="red-text">
+                                            <span class="red-text" style="font-weight: 600;">
                                                 <i class="material-icons tiny">cancel</i> Absent
                                             </span>
                                         {% endif %}
@@ -168,6 +203,11 @@
                     <a href="/view.html" class="btn waves-effect waves-light green">
                         <i class="material-icons left">search</i>New Search
                     </a>
+                    {% if block_index %}
+                    <a href="/edit/{{ block_index }}" class="btn waves-effect waves-light orange darken-2">
+                        <i class="material-icons left">edit</i>Modify Record
+                    </a>
+                    {% endif %}
                     <a href="/result.html" class="btn waves-effect waves-light orange">
                         <i class="material-icons left">security</i>Check Integrity
                     </a>
